@@ -50,11 +50,12 @@ SUn -> le | ε
 
 As you can see, with the above production rules, you can generate some sentences like:
 1. you are a boy -> tu esti un baiat
-<img src='imgs/ex_1.png' width="300" />
+<img src='imgs/ex_1.png' width="450" />
 <!-- ![Ex 1](imgs/ex_1.png) -->
 
 2. the child loves the dog -> copilul iubeste cainele
-![Ex 2](imgs/ex_2.png)
+<img src='imgs/ex_2.png' width="450" />
+<!-- ![Ex 2](imgs/ex_2.png) -->
 
 ### Eliminating Ambiguity
 
@@ -73,7 +74,8 @@ Common ambiguities seem to be:
 
 2. If the same non-terminal appears in both the FIRST and FOLLOW set of a non-terminal.
 However, with my grammar, that is not the case:
-![Grammar Table](grammar_table.png)
+<img src='imgs/grammar_table.png' width="600" />
+<!-- ![Grammar Table](imgs/grammar_table.png) -->
 
 Fortunately in my case, there is no instance of the possibility of parsing the same input two 
 different ways, as due to its simple attempt at modeling basic and very defined romanian 
@@ -89,11 +91,13 @@ back at itself, again, without having actually parsed anything.
 
 I made the following diagrams to illustrate these two kinds of left recursion:
 
-1. Direct Left Recursion 
-![Direct](left_recursion_direct.drawio.png)
+1. Direct Left Recursion  
+<img src='imgs/left_recursion_direct.drawio.png' width="450" />
+<!-- ![Direct](left_recursion_direct.drawio.png) -->
 
-2. Indirect Left Recursion 
-![Indirect](left_recursion_indirect.drawio.png)
+2. Indirect Left Recursion  
+<img src='imgs/left_recursion_indirect.drawio.png' width="450" />
+<!-- ![Indirect](left_recursion_indirect.drawio.png) -->
 
 In my case, once again, there is no present left recursion. There's never even a case in which
 a single path can encounter the same non-terminal twice, the current grammar is very finite.
@@ -123,7 +127,8 @@ itself again, as demonstrated with the following example:
 
     the dog is a boy or the dog is a girl -> cainele este un baiat sau cainele este o fata
 
-![Recursion Example](recursion_ex_roman.drawio.png)
+<img src='imgs/recursion_ex_roman.drawio.png' width="600" />
+<!-- ![Recursion Example](recursion_ex_roman.drawio.png) -->
 
 ## Implementation
 
@@ -212,23 +217,28 @@ whether the strings are successfully parsed or not, which can be run with:
 
 The automated test, 'run_tests.' produces the following:
 
-![Test Results](imgs/tests_results.png)
+<img src='imgs/tests_results.png' width="450" />
+<!-- ![Test Results](imgs/tests_results.png) -->
 
 All the tests were successful. Here are the actual parse trees, made with the LL1 parser of princeton, of an example of both an expected pass test and expected fail test, to visualize why they pass/fail:
 [Princeton LL1 Sim](https://www.cs.princeton.edu/courses/archive/spring20/cos320/LL1/)
 
 1. Expected pass sentence: 'copilul este o fata' (the child is a girl)
 * Manual Test In Prolog:
-** ![Pass Test](imgs/pass_test_ex.png)
+** <img src='imgs/pass_test_ex.png' width="350" />
+<!-- ** ![Pass Test](imgs/pass_test_ex.png) -->
 * Parse Tree:
-** ![Pass Tree](imgs/tree_pass_test_ex.png)
+** <img src='imgs/tree_pass_test_ex.png' width="550" />
+<!-- ** ![Pass Tree](imgs/tree_pass_test_ex.png) -->
 * Explanation: 
 
 2. Expected fail sentence: 'o fata iubeste' (a girl loves)
 * Manual Test In Prolog:
-** ![Fail Test](imgs/test_fail_ex.png)
+** <img src='imgs/test_fail_ex.png' width="350" />
+<!-- ** ![Fail Test](imgs/test_fail_ex.png) -->
 * Parse Tree:
-** ![Fail Tree](imgs/tree_fail_text_ex.png)
+** <img src='imgs/tree_fail_text_ex.png' width="550" />
+<!-- ** ![Fail Tree](imgs/tree_fail_text_ex.png) -->
 
 Both the manual tests in prolog and LL1 tree parser confirm that the sentences were parsed
 as expected.
@@ -249,55 +259,50 @@ therefore their potential time complexity:
 
 0. Recursively Enumerable (Type-0) – Turing Machine (Least Restrictive)
 
-No real restrictions on production rules, as long as the left side contains at least one variable.
+* No real restrictions on production rules, as long as the left side contains at least one variable.
 
-Example: Sab → ba
+ * Example: Sab → ba
 
-Can generate any computable language, but may run forever without halting.
+* Can generate any computable language, but may run forever without halting.
 
-Parsing is undecidable in general.
+* Parsing is undecidable in general.
 
 1. Context-Sensitive Grammar (Type-1) – Linear Bounded Automaton
 
-Rules must not shrink the string: the output must be at least as long as the input.
+* Rules must not shrink the string: the output must be at least as long as the input.
 
-Example:
-
-css
-Copy
-Edit
+* Example:
 A → BA  
 B → ABc  
-More powerful than context-free grammars.
 
-Parsing is possible but may take a lot of space (PSPACE complexity).
+* More powerful than context-free grammars.
+
+* Parsing is possible but may take a lot of space (PSPACE complexity).
 
 2. Context-Free Grammar (Type-2) – Pushdown Automaton
 
-Each rule replaces a single variable with any string of terminals and/or variables.
+* Each rule replaces a single variable with any string of terminals and/or variables.
 
-Example: S → aSb | ε
+* Example: S → aSb | ε
 
-Common for programming languages and arithmetic expressions.
+* Common for programming languages and arithmetic expressions.
 
-Parsing is often O(n³) (or faster with optimized algorithms).
+* Parsing is often O(n³) (or faster with optimized algorithms).
 
 3. Regular Grammar (Type-3) – Finite Automaton (Most Restrictive)
 
-Rules can only produce one terminal followed by a variable (or just a terminal).
+* Rules can only produce one terminal followed by a variable (or just a terminal).
 
-Example:
+* Example:
 
-less
-Copy
-Edit
 S → aA  
 A → bS | ε  
-Great for simple patterns like identifiers, numbers, or tokens.
 
-Parsing is fast and linear: O(n)
+* Great for simple patterns like identifiers, numbers, or tokens.
 
-0. Recursively Unumerable, uses Turing Machine (least restrictive)
+* Parsing is fast and linear: O(n)
+
+<!-- 0. Recursively Unumerable, uses Turing Machine (least restrictive)
 * May look like this: 
 ** Sab -> ba
 * meaning it could go on infinitely parsing the string
@@ -317,6 +322,6 @@ Parsing is fast and linear: O(n)
 3. Regular Grammar, uses finite automata (most restrictive)
 * May look like this:
 ** 
-* and with a 
+* and with a  -->
 
 [Chomsky's Hierarchy](https://www.geeksforgeeks.org/chomsky-hierarchy-in-theory-of-computation/)
