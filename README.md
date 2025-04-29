@@ -59,7 +59,7 @@ As you can see, with the above production rules, you can generate some sentences
 
 Ambiguity in a set of production rules is when there are multiple ways to parse the input 
 string, creating different trees with identical results. An example could be if somehow, 
-with an input string of 'she is a girl', there were two or more ways of parsing the rules 
+with an input string of 'she is a girl', there were two or more ways of parsing the input 
 to arrive at that string.
 [Ambiguous Grammars](https://www.geeksforgeeks.org/ambiguous-grammar/)
 
@@ -74,6 +74,11 @@ Common ambiguities seem to be:
 However, with my grammar, that is not the case:
 ![Grammar Table](grammar_table.png)
 
+Fortunately in my case, there is no instance of the possibility of parsing the same input two 
+different ways, as due to its simple attempt at modeling basic and very defined romanian 
+sentence structure, there isn't a whole lot of room for ambiguity. However, for a grammar 
+aimed at defining mathematical operations, it might be less easy to avoid.
+
 ### Eliminating Left Recursion
 
 Left recursion in a grammar is when a non-terminal calls itself as the first thing it produces,
@@ -83,9 +88,11 @@ back at itself, again, without having actually parsed anything.
 
 I made the following diagrams to illustrate these two kinds of left recursion:
 
-1. Direct Left Recursion ![Direct](left_recursion_direct.drawio.png)
+1. Direct Left Recursion 
+![Direct](left_recursion_direct.drawio.png)
 
-2. Indirect Left Recursion ![Indirect](left_recursion_indirect.drawio.png)
+2. Indirect Left Recursion 
+![Indirect](left_recursion_indirect.drawio.png)
 
 In my case, once again, there is no present left recursion. There's never even a case in which
 a single path can encounter the same non-terminal twice, the current grammar is very finite.
@@ -94,7 +101,7 @@ Even if I added recursivity, by allowing compound sentences using words like 'an
 and permitting that a sentence may have multiple SVO components, there is still no instance
 in which left recursion is a problem:
 
-S -> NP VP **C**           // new non-terminal 'C'
+S -> NP VP **C**           // new non-terminal 'C' for conjunction
 NP -> Det N | PR
 VP -> V | TV NP
 C -> C' NS                 // new line
@@ -119,15 +126,16 @@ itself again, as demonstrated with the following example:
 
 ## Implementation
 
-In order to test this grammar, the declaritive programming language Prolog, which many consider
+In order to test this grammar, the declarative programming language Prolog, which many consider
 to be a built in parser with its rule-and-fact-setting ability and which was originally programmed
-to write natural language applications, will be used to define the production rules of the grammar.
+to write natural language applications, will be used to define the production rules of the grammar
+in the 'romania.pl' file.
 
     ```prolog
     s --> np, vp.
     np --> det, n.
     np --> pr.
-    vp --> v.
+    vp --> v, np.
     vp --> tv, np.
     det --> [o].
     det --> [un].
@@ -135,7 +143,7 @@ to write natural language applications, will be used to define the production ru
     n --> [copil], sum.
     n --> [baiat], sum.
     n --> [caine], sun.
-    n --> [femeie], suf.
+    n --> [fata], suf.
     n --> [carte], suf.
     pr --> [eu].
     pr --> [tu].
@@ -154,28 +162,158 @@ to write natural language applications, will be used to define the production ru
     suf --> [a].
     suf --> [].
     ```
-
-## Test
+    This is actually a special syntax offered by prolog specifically for context-free grammar construction.
 
 Then a manual tester and automated tester will be written:
 
     ```prolog
-    
-    
-    ```
+        % succeeds if parsing succeeds
+    test_true(Sentence) :-
+        phrase(s, Sentence),
+        format("✅ Success (expected true): ~w~n", [Sentence]).
 
-So that a user can test their own sentence, or simply run a set of predefined tests and see 
-whether the strings are successfully parsed or not.
+    % succeeds if parsing fails
+    test_false(Sentence) :-
+        \+ phrase(s, Sentence),
+        format("✅ Success (expected false): ~w~n", [Sentence]).
+    ```
+    These tests you can use to manually test a sentence you expect to pass or fail:
+    ?- test_true([this, is, a, test]). (should give fail)
+
+    ?- test_false([this, is, a, test]). (should give true).
+
+    ```prolog
+    run_tests :-
+        % Expected to succeed
+        test_true([tu, esti, un, baiat]),
+        test_true([eu, sunt, un, baiat]),
+        test_true([copil, ul, iubeste, caine, le]),
+        test_true([ea, este, o, fata]),
+        test_true([tu, cititi, fata, a]),
+        test_true([un, caine, este, un, baiat]),
+        test_true([eu, citesc, ea]),
+        % Expected to fail
+        test_false([un, baiat]),                          % incomplete, no verb phrase
+        test_false([]),                                   % empty string
+        test_false([ea, carte, sunt]),                    % 'she book am', NP does not allow pronoun-noun
+        test_false([sunt, un, caine]),                    % 'am a dog', no noun phrase to begin
+        test_false([un, iubeste, o, carte]),              % 'a loves a book', no noun to accompany article
+        test_false([un, sunt]),                           % 'a am', no noun to accompany article
+        test_false([o, fata, ea, este, o, fata]).         % 'a girl she is a girl', NP does not allow article + noun and pronoun
+    ```
+    This is so that the user can simply run a set of predefined tests and see 
+    whether the strings are successfully parsed or not, which can be run with:
+    ?- run_tests.
+
+## Test
+
+The automated test, 'run_tests.' produces the following:
+
+![Test Results](test_results.png)
+
+All the tests were successful. Here are the actual parse trees, made with the LL1 parser of princeton, of an example of both an expected pass test and expected fail test, to visualize why they pass/fail:
+[Princeton LL1 Sim](https://www.cs.princeton.edu/courses/archive/spring20/cos320/LL1/)
+
+1. Expected pass sentence: 'copilul este o fata' (the child is a girl)
+* Manual Test In Prolog:
+** ![Pass Test](pass_test_ex.png)
+* Parse Tree:
+** ![Pass Tree](tree_pass_test_ex.png)
+* Explanation: 
+
+2. Expected fail sentence: 'o fata iubeste' (a girl loves)
+* Manual Test In Prolog:
+** ![Fail Test](test_fail_ex.png)
+* Parse Tree:
+** ![Fail Tree](tree_fail_text_ex.png)
+
+Both the manual tests in prolog and LL1 tree parser confirm that the sentences were parsed
+as expected.
 
 ## Analysis
 
+The grammar, prior to being checked for ambiguity and left recursion, was a type 2
+language in that it followed the correct left-hand side and right-hand side rules
+for context-free grammars.
 
-<!-- The evolution of the grammar saw itself go from an imperfect type 2 context-free grammar, 
-to a functional type 2 context-free grammar.
+However, if there were a ambiguity or left recursion, then that could mean a failing 
+in the compilation, or an infinite useless loop, which are necessary to remove before 
+the grammar can be a *functional* context-free grammar.
 
-The grammar always followed the correct left-hand side and right-hand side language for 
-the production rules, meaning it was always classified as a type 2 language. However, it 
-wasn't until after the ambiguity was fixed and there was verifiably no left recursion that
-it could be classified as a proper type 2 context-free grammar, of which a PDA (push-down 
-automata) or LL1 (left left look ahead 1) parse could be made to accurately parse the language.
- -->
+In fact, all the language types have rules for how their production rules can be written, 
+which ultimately decide how restrictive they are on the input that they can parse, and 
+therefore their potential time complexity:
+
+0. Recursively Enumerable (Type-0) – Turing Machine (Least Restrictive)
+
+No real restrictions on production rules, as long as the left side contains at least one variable.
+
+Example: Sab → ba
+
+Can generate any computable language, but may run forever without halting.
+
+Parsing is undecidable in general.
+
+1. Context-Sensitive Grammar (Type-1) – Linear Bounded Automaton
+
+Rules must not shrink the string: the output must be at least as long as the input.
+
+Example:
+
+css
+Copy
+Edit
+A → BA  
+B → ABc  
+More powerful than context-free grammars.
+
+Parsing is possible but may take a lot of space (PSPACE complexity).
+
+2. Context-Free Grammar (Type-2) – Pushdown Automaton
+
+Each rule replaces a single variable with any string of terminals and/or variables.
+
+Example: S → aSb | ε
+
+Common for programming languages and arithmetic expressions.
+
+Parsing is often O(n³) (or faster with optimized algorithms).
+
+3. Regular Grammar (Type-3) – Finite Automaton (Most Restrictive)
+
+Rules can only produce one terminal followed by a variable (or just a terminal).
+
+Example:
+
+less
+Copy
+Edit
+S → aA  
+A → bS | ε  
+Great for simple patterns like identifiers, numbers, or tokens.
+
+Parsing is fast and linear: O(n)
+
+0. Recursively Unumerable, uses Turing Machine (least restrictive)
+* May look like this: 
+** Sab -> ba
+* meaning it could go on infinitely parsing the string
+
+1. Context-Sensitive Grammar, uses linear bound automata
+* May look like this:
+** A -> BA
+** B -> ABc
+* and with a turing machine, has no limit to how 
+
+2. Context-Free Grammar, uses pushdown automata
+* May look like this:
+** S -> aSb
+
+* and with a push-down automata, can only only need as much as O(n^3) time complexity
+
+3. Regular Grammar, uses finite automata (most restrictive)
+* May look like this:
+** 
+* and with a 
+
+[Chomsky's Hierarchy](https://www.geeksforgeeks.org/chomsky-hierarchy-in-theory-of-computation/)
