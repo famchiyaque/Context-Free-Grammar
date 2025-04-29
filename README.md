@@ -36,24 +36,25 @@ The following set of production rules, abiding by the laws of a type 2 language 
 left hand side may only have one non-terminal), allow the formation of some basic 
 sentences with correct SVO structure and grammar in Romanian:
 
-S -> NP VP
-NP -> Det N | PR
-VP -> V | TV NP
-Det -> o | un | ε
-N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf
-PR -> eu | tu | el | ea
-V -> este | esti | sunt
-TV -> iubeste | cititi | citesc
-SUm -> ul | ε
-SUf -> a | ε
-SUn -> le | ε
+S -> NP VP  
+NP -> Det N | PR  
+VP -> V | TV NP  
+Det -> o | un | ε  
+N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf  
+PR -> eu | tu | el | ea  
+V -> este | esti | sunt  
+TV -> iubeste | cititi | citesc  
+SUm -> ul | ε  
+SUf -> a | ε  
+SUn -> le | ε  
 
 As you can see, with the above production rules, you can generate some sentences like:
 1. you are a boy -> tu esti un baiat
-![Ex 1](ex_1.png)
+<img src='imgs/ex_1.png' width="300" />
+<!-- ![Ex 1](imgs/ex_1.png) -->
 
 2. the child loves the dog -> copilul iubeste cainele
-![Ex 2](ex_2.png)
+![Ex 2](imgs/ex_2.png)
 
 ### Eliminating Ambiguity
 
@@ -101,20 +102,20 @@ Even if I added recursivity, by allowing compound sentences using words like 'an
 and permitting that a sentence may have multiple SVO components, there is still no instance
 in which left recursion is a problem:
 
-S -> NP VP **C**           // new non-terminal 'C' for conjunction
-NP -> Det N | PR
-VP -> V | TV NP
-C -> C' NS                 // new line
-C' -> si | sau             // new line
-NS -> NP | S               // new line
-Det -> o | un | ε
-N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf
-PR -> eu | tu | el | ea
-V -> este | esti | sunt
-TV -> iubeste | cititi | citesc
-SUm -> ul | ε
-SUf -> a | ε
-SUn -> le | ε
+S -> NP VP **C**           // new non-terminal 'C' for conjunction  
+NP -> Det N | PR  
+VP -> V | TV NP  
+C -> C' NS                 // new line  
+C' -> si | sau             // new line  
+NS -> NP | S               // new line  
+Det -> o | un | ε  
+N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf  
+PR -> eu | tu | el | ea  
+V -> este | esti | sunt  
+TV -> iubeste | cititi | citesc  
+SUm -> ul | ε  
+SUf -> a | ε  
+SUn -> le | ε  
 
 Despite it now being recursive in that a sentence can, through a conjunction, arrive at a whole 
 new sentence, it is not left recursive because there is progress being made before it arrives at 
@@ -162,7 +163,8 @@ in the 'romania.pl' file.
     suf --> [a].
     suf --> [].
     ```
-    This is actually a special syntax offered by prolog specifically for context-free grammar construction.
+
+This is actually a special syntax offered by prolog specifically for context-free grammar construction.
 
 Then a manual tester and automated tester will be written:
 
@@ -201,31 +203,32 @@ Then a manual tester and automated tester will be written:
         test_false([un, sunt]),                           % 'a am', no noun to accompany article
         test_false([o, fata, ea, este, o, fata]).         % 'a girl she is a girl', NP does not allow article + noun and pronoun
     ```
-    This is so that the user can simply run a set of predefined tests and see 
-    whether the strings are successfully parsed or not, which can be run with:
-    ?- run_tests.
+
+This is so that the user can simply run a set of predefined tests and see 
+whether the strings are successfully parsed or not, which can be run with:
+?- run_tests.
 
 ## Test
 
 The automated test, 'run_tests.' produces the following:
 
-![Test Results](test_results.png)
+![Test Results](imgs/tests_results.png)
 
 All the tests were successful. Here are the actual parse trees, made with the LL1 parser of princeton, of an example of both an expected pass test and expected fail test, to visualize why they pass/fail:
 [Princeton LL1 Sim](https://www.cs.princeton.edu/courses/archive/spring20/cos320/LL1/)
 
 1. Expected pass sentence: 'copilul este o fata' (the child is a girl)
 * Manual Test In Prolog:
-** ![Pass Test](pass_test_ex.png)
+** ![Pass Test](imgs/pass_test_ex.png)
 * Parse Tree:
-** ![Pass Tree](tree_pass_test_ex.png)
+** ![Pass Tree](imgs/tree_pass_test_ex.png)
 * Explanation: 
 
 2. Expected fail sentence: 'o fata iubeste' (a girl loves)
 * Manual Test In Prolog:
-** ![Fail Test](test_fail_ex.png)
+** ![Fail Test](imgs/test_fail_ex.png)
 * Parse Tree:
-** ![Fail Tree](tree_fail_text_ex.png)
+** ![Fail Tree](imgs/tree_fail_text_ex.png)
 
 Both the manual tests in prolog and LL1 tree parser confirm that the sentences were parsed
 as expected.
