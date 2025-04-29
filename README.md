@@ -18,13 +18,13 @@ verbs are conjugated. This makes sense as they are both latin-based romance lang
 
 For example, for the basic English sentences: "I have a book", and "You have a dog",
 the verb stays the same, and both nouns receive the same indefinite article 'a'.
-But like spanish, the article depends on the gender of the noun, and verb is conjugated:
-    yo tengo un libro -> eu am o carte
-    tú tienes un perro -> tu aveti un caine
+But like spanish, the article depends on the gender of the noun, and verb is conjugated:  
+    yo tengo un libro -> eu am o carte  
+    tú tienes un perro -> tu aveti un caine  
 
 However, the definite article, like 'the' in English, is more complicated. It often 
-gets attached as a suffix to the noun, like this:
-    boy -> băiat; the boy -> băiatul, or dog -> câine ; the dog -> câinele
+gets attached as a suffix to the noun, like this:  
+    boy -> băiat; the boy -> băiatul, or dog -> câine ; the dog -> câinele  
 
 <!-- Romanian is more similar to Spanish than English. However, the verb conjugations, 
 genderization of indefinite articles, and definite articles being sometimes attached
@@ -74,7 +74,7 @@ Common ambiguities seem to be:
 
 2. If the same non-terminal appears in both the FIRST and FOLLOW set of a non-terminal.
 However, with my grammar, that is not the case:
-<img src='imgs/grammar_table.png' width="600" />
+<img src='imgs/grammar_table.png' width="800" />
 <!-- ![Grammar Table](imgs/grammar_table.png) -->
 
 Fortunately in my case, there is no instance of the possibility of parsing the same input two 
@@ -92,11 +92,11 @@ back at itself, again, without having actually parsed anything.
 I made the following diagrams to illustrate these two kinds of left recursion:
 
 1. Direct Left Recursion  
-<img src='imgs/left_recursion_direct.drawio.png' width="450" />
+<img src='imgs/left_recursion_direct.drawio.png' width="350" />
 <!-- ![Direct](left_recursion_direct.drawio.png) -->
 
 2. Indirect Left Recursion  
-<img src='imgs/left_recursion_indirect.drawio.png' width="450" />
+<img src='imgs/left_recursion_indirect.drawio.png' width="350" />
 <!-- ![Indirect](left_recursion_indirect.drawio.png) -->
 
 In my case, once again, there is no present left recursion. There's never even a case in which
@@ -123,7 +123,7 @@ SUn -> le | ε
 
 Despite it now being recursive in that a sentence can, through a conjunction, arrive at a whole 
 new sentence, it is not left recursive because there is progress being made before it arrives at 
-itself again, as demonstrated with the following example:
+itself again, as demonstrated with the following example:  
 
     the dog is a boy or the dog is a girl -> cainele este un baiat sau cainele este o fata
 
@@ -224,24 +224,26 @@ All the tests were successful. Here are the actual parse trees, made with the LL
 [Princeton LL1 Sim](https://www.cs.princeton.edu/courses/archive/spring20/cos320/LL1/)
 
 1. Expected pass sentence: 'copilul este o fata' (the child is a girl)
-* Manual Test In Prolog:
+* Manual Test In Prolog:  
 ** <img src='imgs/pass_test_ex.png' width="350" />
 <!-- ** ![Pass Test](imgs/pass_test_ex.png) -->
-* Parse Tree:
+* Parse Tree:  
 ** <img src='imgs/tree_pass_test_ex.png' width="550" />
 <!-- ** ![Pass Tree](imgs/tree_pass_test_ex.png) -->
-* Explanation: 
+* Result: The string was parsed successfully and reached the end.
 
 2. Expected fail sentence: 'o fata iubeste' (a girl loves)
-* Manual Test In Prolog:
+* Manual Test In Prolog:  
 ** <img src='imgs/test_fail_ex.png' width="350" />
 <!-- ** ![Fail Test](imgs/test_fail_ex.png) -->
-* Parse Tree:
+* Parse Tree:  
 ** <img src='imgs/tree_fail_text_ex.png' width="550" />
 <!-- ** ![Fail Tree](imgs/tree_fail_text_ex.png) -->
+* Result: The input string caused an error, due to it reaching the end without satisfying the 
+full requirements of language in the VP -> NP part.
 
-Both the manual tests in prolog and LL1 tree parser confirm that the sentences were parsed
-as expected.
+Both the manual tests in prolog and LL1 tree parser confirm that the sentences were parsed, 
+or not parsed, as expected.
 
 ## Analysis
 
