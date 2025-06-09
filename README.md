@@ -36,17 +36,7 @@ The following set of production rules, abiding by the laws of a type 2 language 
 left hand side may only have one non-terminal), allow the formation of some basic 
 sentences with correct SVO structure and grammar in Romanian:
 
-S -> NP VP  
-NP -> Det N | PR  
-VP -> V | TV NP  
-Det -> o | un | ε  
-N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf  
-PR -> eu | tu | el | ea  
-V -> este | esti | sunt  
-TV -> iubeste | cititi | citesc  
-SUm -> ul | ε  
-SUf -> a | ε  
-SUn -> le | ε  
+
 
 As you can see, with the above production rules, you can generate some sentences like:
 1. you are a boy -> tu esti un baiat
@@ -57,56 +47,166 @@ As you can see, with the above production rules, you can generate some sentences
 <img src='imgs/ex_2.png' width="450" />
 <!-- ![Ex 2](imgs/ex_2.png) -->
 
+## UPDATES MADE TO DEMONSTRATE UNDERSTANDING OF REMOVING AMGITUITY AND LEFFT RECURSION
+
+### Eliminating Left Recursion
+
+I started with the grammar:
+
+S -> P
+P -> P' PH | ε
+P' -> P PH
+PH -> Det N | PR | V | TV | P | ε
+Det -> o | un | ε  
+N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf  
+PR -> eu | tu | el | ea  
+V -> este | esti | sunt  
+TV -> iubeste | cititi | citesc  
+SUm -> ul | ε  
+SUf -> a | ε  
+SUn -> le | ε  
+
+Which can parse a complete sentence like: 
+
+                                  copil este un baiat
+S->P->P'->P->ε, Det N->Det->ε, N->copil, P->P->P'->V->este, P->P->P'->Det N->Det->un, N->baiat, P->ε
+
+However, it could also go on forever, if when the first P calls P', and P' calls P, and so on 
+infinitely. This is a case of indirect left recursion, which should be eliminated from any functional
+grammar.
+
+So a simple fix is to just simply remove the P' rule, and change the P rule to:
+
+P -> PH PH PH
+
+and also remove P from the PH rule.
+
+So that a phrase , which is a sentence, is limited to just 3 phrases, which works for our SVO model.
+It means we can have a PH for the Det N (determinate and noun) or for the PR (pronoun), a PH for the V (verb) or TV (type verb), and a third PH for the object, which is another Det N.
+
+And so the grammar ends up like:
+
+S -> P
+P -> PH PH PH
+PH -> Det N | PR | V | TV | ε
+...
+
+This way, the P rule isn't indirectly calling itself potentially infinite times, left recursion is eliminated, and the grammar is now scoped to 3 phrases.
+
 ### Eliminating Ambiguity
 
+Now the grammar can parse up to 3 PHs, or phrases. Any combination of the PHs is correctly parsed:
+
+este baiat eu iubeste (is boy he loves),
+este esti esti este (is are are is)
+
+But this is not satisfactory. We are allowing incorrect Romaninan grammar to be parsed, we have practically no limits on what can be parsed.
+
+<!-- In fact this grammar is ambigous, because you can derive the same string of words various ways.
+
+For example, the sentence: copil ul este un baiat. (the child is a boy)
+
+S->P->PH->Det->ε, N->copil, SUm->ul, P->PH->V->este, P->PH->Det N-> Det->un, N->baiat, P->ε. -->
+
+So we need to better define what our phrases can be. The PH contained the phrases for subjects (Det N) and (PR), and the phrases for verbs (V) and (TV). 
+
+So we can start by making the P rule have only two phrases, one for the subject of the sentence, and one for the verb phrase of the sentence. We replace the PH line with the two lines that break it into it's parts:
+
+S -> P
+P -> NP VP  
+NP -> Det N | PR  
+VP -> V | TV NP  
+
+And this way, we end up with a grammar that actually puts an order to the phrases, expecting a Noun phrase NP first, and then a verb phrase VP, which can produce either a solo verb V or dependent verb TV along with another noung phrase.
+
+S -> P
+P -> NP VP  
+NP -> Det N | PR  
+VP -> V | TV NP  
+Det -> o | un | ε  
+N -> copil SUm | baiat SUm | caine SUn | fata SUf | carte SUf  
+PR -> eu | tu | el | ea  
+V -> este | esti | sunt  
+TV -> iubeste | cititi | citesc  
+SUm -> ul | ε  
+SUf -> a | ε  
+SUn -> le | ε 
+
+
+<!-- S -> P
+P -> P P'
+P' -> Det N | PR | V | TV | P | ε
+
+There was no distinction between Noun phrases (NP) and Verb phrases (VP), so technically this could
+still produce good sentences like:
+
+          un baiat            este          un baiat
+S->P->P'(  Det N   ), P->P'->( V ), P->P'->( Det N  ), P->ε
+
+However, this is super ambigous, and the same sentence could be made in various other ways:
+
+                  un baiat                   este                   un baiat
+S->P->P'( P ),P'(  Det N  ), P->P'->ε, P->P'(  V  ), P->P'( P ),P'(  Det N  ), P->ε
+
+So the grammar needed to be adjusted to eliminate this ambiguity. I started by removing the epsilon
+empty option from the P' word, which just made the grammar have infinite parsing possibilities, and removing the P from the P' as well, to prevent the P' to be able to call P and therefore itself. So I was left with:
+
+S -> P
+P -> P' P
+P' -> Det N | PR | V | TV  -->
+
+<!-- 
 Ambiguity in a set of production rules is when there are multiple ways to parse the input 
 string, creating different trees with identical results. An example could be if somehow, 
 with an input string of 'she is a girl', there were two or more ways of parsing the input 
 to arrive at that string.
-[Ambiguous Grammars](https://www.geeksforgeeks.org/ambiguous-grammar/)
+[Ambiguous Grammars](https://www.geeksforgeeks.org/ambiguous-grammar/) -->
 
-Common ambiguities seem to be:
+
+
+<!-- Common ambiguities seem to be:
 1. When the possibilities of a non-terminal all start with the same terminal: A -> aB | aC, in which you would need left factoring to fix it:
  
 - 'In left factoring, we separate the common prefixes from the production rule'
 - You end up with A -> aA' ; B -> b ; C -> c
-- [Left Factoring](https://www.naukri.com/code360/library/left-factoring-in-compiler-design)
+- [Left Factoring](https://www.naukri.com/code360/library/left-factoring-in-compiler-design) -->
 
-2. If the same non-terminal appears in both the FIRST and FOLLOW set of a non-terminal.
+<!-- 2. If the same non-terminal appears in both the FIRST and FOLLOW set of a non-terminal.
 However, with my grammar, that is not the case:
-<img src='imgs/grammar_table.png' width="800" />
+<img src='imgs/grammar_table.png' width="800" /> -->
 <!-- ![Grammar Table](imgs/grammar_table.png) -->
 
-Fortunately in my case, there is no instance of the possibility of parsing the same input two 
+<!-- Fortunately in my case, there is no instance of the possibility of parsing the same input two 
 different ways, as due to its simple attempt at modeling basic and very defined romanian 
 sentence structure, there isn't a whole lot of room for ambiguity. However, for a grammar 
-aimed at defining mathematical operations, it might be less easy to avoid.
+aimed at defining mathematical operations, it might be less easy to avoid. -->
+ 
 
-### Eliminating Left Recursion
+<!-- ### Eliminating Left Recursion
 
 Left recursion in a grammar is when a non-terminal calls itself as the first thing it produces,
 which leads to an infinite loop and no progres (direct), or if the flow of non-terminals arrives 
 back at itself, again, without having actually parsed anything.
 [Removing Left Recursion](https://www.geeksforgeeks.org/removing-direct-and-indirect-left-recursion-in-a-grammar/)
 
-I made the following diagrams to illustrate these two kinds of left recursion:
+I made the following diagrams to illustrate these two kinds of left recursion: -->
 
-1. Direct Left Recursion  
+<!-- 1. Direct Left Recursion  
 <img src='imgs/left_recursion_direct.drawio.png' width="350" />
 <!-- ![Direct](left_recursion_direct.drawio.png) -->
 
-2. Indirect Left Recursion  
+<!-- 2. Indirect Left Recursion  
 <img src='imgs/left_recursion_indirect.drawio.png' width="350" />
 <!-- ![Indirect](left_recursion_indirect.drawio.png) -->
 
-In my case, once again, there is no present left recursion. There's never even a case in which
+<!-- In my case, once again, there is no present left recursion. There's never even a case in which
 a single path can encounter the same non-terminal twice, the current grammar is very finite.
 
 Even if I added recursivity, by allowing compound sentences using words like 'and' or 'or',
 and permitting that a sentence may have multiple SVO components, there is still no instance
-in which left recursion is a problem:
+in which left recursion is a problem: --> --> -->
 
-S -> NP VP **C**           // new non-terminal 'C' for conjunction  
+<!-- S -> NP VP **C**           // new non-terminal 'C' for conjunction  
 NP -> Det N | PR  
 VP -> V | TV NP  
 C -> C' NS                 // new line  
@@ -119,15 +219,15 @@ V -> este | esti | sunt
 TV -> iubeste | cititi | citesc  
 SUm -> ul | ε  
 SUf -> a | ε  
-SUn -> le | ε  
+SUn -> le | ε   -->
 
-Despite it now being recursive in that a sentence can, through a conjunction, arrive at a whole 
+<!-- Despite it now being recursive in that a sentence can, through a conjunction, arrive at a whole 
 new sentence, it is not left recursive because there is progress being made before it arrives at 
 itself again, as demonstrated with the following example:  
 
     the dog is a boy or the dog is a girl -> cainele este un baiat sau cainele este o fata
 
-<img src='imgs/recursion_ex_roman.drawio.png' width="600" />
+<img src='imgs/recursion_ex_roman.drawio.png' width="600" /> -->
 <!-- ![Recursion Example](recursion_ex_roman.drawio.png) -->
 
 ## Implementation
